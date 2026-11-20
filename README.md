@@ -68,10 +68,14 @@ ExemploFlaskMVC/
     │   ├── popular_banco.py   # Função gerar_dados/Faker original
     │   └── inicializar.py     # Inicialização e usuário administrativo
     ├── auth.py                # Flask-Login + formulário de login
-    ├── web.py                 # Controllers MVC, retornam HTML
-    ├── admin_views.py         # CRUD Flask-Admin + verificação de login
+    ├── view/
+    │   ├── __init__.py
+    │   ├── web.py             # Controllers MVC, retornam HTML
+    │   └── admin_views.py     # CRUD Flask-Admin + verificação de login
     └── templates/             # Views HTML/Jinja
 ```
+
+As telas de cadastro de alunos no Flask-Admin oferecem seletores de **curso** e **ano de ingresso**, usando as opções de `data/popular_banco.py`, sem mudanças no banco.
 
 ## Mudanças no código antigo (mínimas)
 

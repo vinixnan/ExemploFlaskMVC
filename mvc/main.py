@@ -2,12 +2,12 @@ import os
 
 from flask import Flask
 
-from admin_views import configurar_admin
+from view.admin_views import configurar_admin
 from auth import configurar_autenticacao
 from core.definitions import DEBUG
 from model.modelos import banco_peewee
 from rotas import api
-from web import web
+from view.web import web
 
 
 def criar_app():

@@ -5,6 +5,9 @@ from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.peewee import ModelView
 from flask_admin.form import SecureForm
 from flask_login import current_user
+from wtforms import SelectField
+
+from data.popular_banco import CURSOS, ANOS
 
 from model.modelos import AlunoORM, DisciplinaORM, MatriculaORM
 
@@ -39,6 +42,16 @@ class TabelaAdmin(Protegida, ModelView):
 
 class AlunosAdmin(TabelaAdmin):
     form_columns = ("nusp", "nome", "email", "curso", "ano_ingresso")
+
+    # Mesmo catálogo usado na população dos dados; sem alterar o modelo Peewee.
+    form_overrides = {"curso": SelectField, "ano_ingresso": SelectField}
+    form_args = {
+        "curso": {"choices": [(curso, curso) for curso in CURSOS]},
+        "ano_ingresso": {
+            "choices": [(ano, str(ano)) for ano in ANOS],
+            "coerce": int,
+        },
+    }
 
 
 class DisciplinasAdmin(TabelaAdmin):
