@@ -20,6 +20,13 @@ def _executar(consulta):
         raise sqlite3.IntegrityError(str(erro)) from erro
 
 
+def _sql(consulta, parametros=()):
+    # Peewee usa '?' no SQLite e '%s' no PostgreSQL.
+    return banco_peewee.execute_sql(
+        consulta.replace("%s", banco_peewee.param), parametros
+    )
+
+
 def _dicionarios(cursor):
     colunas = [coluna[0] for coluna in cursor.description]
     return [dict(zip(colunas, linha)) for linha in cursor.fetchall()]
@@ -166,8 +173,7 @@ class DisciplinaDAO:
             ORDER BY d.nome_disciplina
         """
         return [
-            Disciplina(codigo, nome)
-            for codigo, nome in banco_peewee.execute_sql(sql, (nusp,)).fetchall()
+            Disciplina(codigo, nome) for codigo, nome in _sql(sql, (nusp,)).fetchall()
         ]
 
     @banco_peewee.connection_context()
@@ -180,19 +186,19 @@ class DisciplinaDAO:
             WHERE d.codigo_disciplina = %s
             ORDER BY m.nota DESC
         """
-        return _dicionarios(banco_peewee.execute_sql(sql, (codigo,)))
+        return _dicionarios(_sql(sql, (codigo,)))
 
     @banco_peewee.connection_context()
     def medias_notas(self):
         sql = """
-            SELECT d.nome_disciplina, ROUND(AVG(m.nota)::numeric, 2) AS media_notas
+            SELECT d.nome_disciplina, ROUND(CAST(AVG(m.nota) AS NUMERIC), 2) AS media_notas
             FROM disciplinas AS d
             INNER JOIN matriculas AS m
               ON m.codigo_disciplina = d.codigo_disciplina
             GROUP BY d.codigo_disciplina, d.nome_disciplina
             ORDER BY media_notas DESC
         """
-        return _dicionarios(banco_peewee.execute_sql(sql))
+        return _dicionarios(_sql(sql))
 
 
 class MatriculaDAO:
@@ -300,6 +306,4 @@ class MatriculaDAO:
               AND m.nota >= %s AND m.frequencia >= %s
             ORDER BY m.nota DESC, a.nome ASC, m.id_matricula ASC
         """
-        return _dicionarios(
-            banco_peewee.execute_sql(sql, (codigo, nota_minima, frequencia_minima))
-        )
+        return _dicionarios(_sql(sql, (codigo, nota_minima, frequencia_minima)))

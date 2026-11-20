@@ -7,9 +7,7 @@ from flask_admin.form import SecureForm
 from flask_login import current_user
 from wtforms import SelectField
 
-from data.popular_banco import CURSOS, ANOS
-
-from model.modelos import AlunoORM, DisciplinaORM, MatriculaORM
+from model.modelos import AlunoORM, DisciplinaORM, MatriculaORM, banco_peewee
 
 
 class Protegida:
@@ -43,15 +41,35 @@ class TabelaAdmin(Protegida, ModelView):
 class AlunosAdmin(TabelaAdmin):
     form_columns = ("nusp", "nome", "email", "curso", "ano_ingresso")
 
-    # Mesmo catálogo usado na população dos dados; sem alterar o modelo Peewee.
     form_overrides = {"curso": SelectField, "ano_ingresso": SelectField}
-    form_args = {
-        "curso": {"choices": [(curso, curso) for curso in CURSOS]},
-        "ano_ingresso": {
-            "choices": [(ano, str(ano)) for ano in ANOS],
-            "coerce": int,
-        },
-    }
+    form_args = {"ano_ingresso": {"coerce": int}}
+
+    @staticmethod
+    def _configurar_opcoes(formulario):
+        # Lê as opções do PostgreSQL a cada abertura do formulário.
+        with banco_peewee.connection_context():
+            cursos = [
+                a.curso
+                for a in AlunoORM.select(AlunoORM.curso)
+                .distinct()
+                .order_by(AlunoORM.curso)
+            ]
+            anos = [
+                a.ano_ingresso
+                for a in AlunoORM.select(AlunoORM.ano_ingresso)
+                .distinct()
+                .order_by(AlunoORM.ano_ingresso.desc())
+            ]
+
+        formulario.curso.choices = [(curso, curso) for curso in cursos]
+        formulario.ano_ingresso.choices = [(ano, str(ano)) for ano in anos]
+        return formulario
+
+    def create_form(self, obj=None):
+        return self._configurar_opcoes(super().create_form(obj))
+
+    def edit_form(self, obj=None):
+        return self._configurar_opcoes(super().edit_form(obj))
 
 
 class DisciplinasAdmin(TabelaAdmin):

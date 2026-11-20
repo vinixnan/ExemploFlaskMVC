@@ -1,6 +1,7 @@
 services:
   postgres:
     image: postgres:17-alpine
+    profiles: ["Postgres"]
     environment:
       POSTGRES_DB: universidade
       POSTGRES_USER: universidade
@@ -18,6 +19,8 @@ services:
   mvc:
     build: ./mvc
     environment:
+      DATABASEKIND: ${DATABASEKIND:-Postgres}
+      SQLITE_PATH: /dados/universidade.db
       POSTGRES_HOST: postgres
       POSTGRES_PORT: "5432"
       POSTGRES_DB: universidade
@@ -27,11 +30,15 @@ services:
       ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Defina ADMIN_PASSWORD no .env}
       DEBUG: "false"
+    volumes:
+      - sqlite_data:/dados
     depends_on:
       postgres:
         condition: service_healthy
+        required: false
     ports:
       - "127.0.0.1:5000:5000"
 
 volumes:
   pgdata:
+  sqlite_data:

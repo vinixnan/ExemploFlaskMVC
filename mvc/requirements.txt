@@ -5,3 +5,4 @@ psycopg2-binary>=2.9,<3
 Flask-Login>=0.6,<1
 Flask-WTF>=1.2,<2
 Flask-Admin[peewee]>=2.2,<3
+gunicorn>=23,<25

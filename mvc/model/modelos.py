@@ -3,6 +3,7 @@ import os
 from peewee import (
     Model,
     PostgresqlDatabase,
+    SqliteDatabase,
     IntegerField,
     TextField,
     FloatField,
@@ -10,13 +11,21 @@ from peewee import (
 )
 from model.dominio import Pessoa, Aluno, Disciplina, Matricula
 
-banco_peewee = PostgresqlDatabase(
-    os.getenv("POSTGRES_DB", "universidade"),
-    user=os.getenv("POSTGRES_USER", "universidade"),
-    password=os.environ.get("POSTGRES_PASSWORD", ""),
-    host=os.getenv("POSTGRES_HOST", "localhost"),
-    port=int(os.getenv("POSTGRES_PORT", "5432")),
-)
+# Uma única configuração para as duas opções de persistência.
+from core.definitions import ARQUIVO_BANCO, DATABASEKIND
+
+if DATABASEKIND == "SQLite":
+    banco_peewee = SqliteDatabase(
+        str(ARQUIVO_BANCO), pragmas={"foreign_keys": 1}, timeout=30
+    )
+else:
+    banco_peewee = PostgresqlDatabase(
+        os.getenv("POSTGRES_DB", "universidade"),
+        user=os.getenv("POSTGRES_USER", "universidade"),
+        password=os.environ.get("POSTGRES_PASSWORD", ""),
+        host=os.getenv("POSTGRES_HOST", "localhost"),
+        port=int(os.getenv("POSTGRES_PORT", "5432")),
+    )
 
 
 class ModeloBase(Model):
