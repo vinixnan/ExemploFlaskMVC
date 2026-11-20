@@ -1,8 +1,8 @@
 """Cria tabelas e popula a base sem duplicar registros a cada reinício."""
 
 from auth import UsuarioORM, criar_admin_inicial
-from data.criar_banco2 import criar_tabelas
-from data.popular_banco2 import popular_banco
+from data.criar_banco import criar_tabelas
+from data.popular_banco import popular_banco
 from model.modelos import banco_peewee
 
 
