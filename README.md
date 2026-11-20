@@ -1,100 +1,92 @@
-# ExemploFlask2 — Universidade (primeira etapa: MVC + PostgreSQL)
+# ExemploFlaskMVC — PostgreSQL, Flask MVC e Flask-Admin
 
-Evolução do projeto da aula anterior, com **mudanças mínimas** em `Aluno`, `Disciplina`, `Matricula` e nas rotas REST originais. A aplicação agora tem páginas MVC, login e Flask-Admin, usando PostgreSQL com Peewee. **Ainda não inclui API de frequência nem simulador**.
+Esta versão foi adaptada **do `atual.zip` fornecido na aula**, mantendo a organização `mvc/` e o código existente em `model/`. **Não foi criado `model2/`**. A API de catracas e o simulador ainda não fazem parte desta etapa.
 
-## Rodar
+## Executar
 
-Pré-requisito: Docker com Docker Compose.
+Requisitos: Docker e Docker Compose.
 
-```bash
+```sh
 cp .env.example .env
 ```
 
-Edite `.env` e substitua todas as senhas e chaves de exemplo. Para gerar uma chave aleatória:
+Altere as senhas no `.env` e defina uma `SECRET_KEY` longa e aleatória (por exemplo, gerada com `python3 -c "import secrets; print(secrets.token_urlsafe(48))"`). Então:
 
-```bash
-python3 -c "import secrets; print(secrets.token_urlsafe(48))"
-```
-
-Pode usar esse comando separadamente para `SECRET_KEY` e `API_TOKEN`.
-
-```bash
+```sh
 docker compose up --build
 ```
 
-Abra **http://localhost:5000/login** e entre com `ADMIN_USERNAME` / `ADMIN_PASSWORD` configurados em `.env`. O contêiner cria as tabelas e popula os dados Faker automaticamente na primeira inicialização (semente 42). Ao reiniciar, não duplica os dados.
+Na primeira inicialização, o contêiner MVC cria as tabelas PostgreSQL, popula os mesmos dados gerados pelo Faker (`SEED = 42`) e cria o usuário administrativo definido no `.env`. Em reinicializações, os registros existentes são preservados.
 
-| Endereço | Para quê? |
+| URL | Descrição |
 | --- | --- |
-| `http://localhost:5000/` | Painel MVC com contadores |
-| `http://localhost:5000/painel/alunos` | Listagem HTML de alunos |
-| `http://localhost:5000/painel/disciplinas` | Listagem HTML de disciplinas |
-| `http://localhost:5000/painel/matriculas` | Listagem HTML de matrículas |
-| `http://localhost:5000/admin/` | Cadastro, edição e exclusão com Flask-Admin |
-| `http://localhost:5000/api` | Endpoint original de identificação da API (exige token) |
+| http://localhost:5000/ | API REST da aula anterior (mesmo endpoint) |
+| http://localhost:5000/alunos | API REST de alunos (mesmas rotas) |
+| http://localhost:5000/login | Login de usuário humano |
+| http://localhost:5000/painel/ | Painel HTML/Jinja protegido |
+| http://localhost:5000/painel/alunos | Página HTML de alunos |
+| http://localhost:5000/painel/disciplinas | Página HTML de disciplinas |
+| http://localhost:5000/painel/matriculas | Página HTML de matrículas |
+| http://localhost:5000/admin/ | CRUD no Flask-Admin, protegido por login |
 
-### Testar as rotas REST anteriores
+O **usuário e a senha** de login são `ADMIN_USERNAME` e `ADMIN_PASSWORD` do arquivo `.env`.
 
-As rotas originais `/alunos`, `/disciplinas` e `/matriculas` permanecem disponíveis. Agora exigem um **token Bearer** (separado do login de sessão do MVC):
+Para conferir as rotas originais e os redirecionamentos de autenticação:
 
-```bash
-# Substitua pelo valor de API_TOKEN definido em .env.
-curl -H 'Authorization: Bearer SEU_TOKEN_AQUI' http://localhost:5000/alunos
+```sh
+./testar.sh
 ```
 
-Por exemplo, as mesmas rotas anteriores: `GET /alunos`, `GET /alunos/95633`, `POST /alunos`, `PUT /alunos/95633`, `DELETE /alunos/95633`, `GET /disciplinas`, `GET /matriculas`, `GET /matriculas/1`.
+Para inspecionar os logs e encerrar os serviços:
 
-### PostgreSQL
-
-O serviço `postgres` do Compose usa o banco `universidade`, usuário `universidade`, porta interna 5432. A porta do computador é **5433**, apenas em `localhost`, para não conflitar com outro PostgreSQL local. Os dados ficam no volume `pgdata` e persistem entre reinicializações.
-
-O banco é acessado pelas classes do Peewee em `mvc/model/orm.py` e pelos DAOs em `mvc/model/dao.py`. Os modelos de domínio da aula anterior foram preservados em `mvc/model/modelos.py`.
-
-### Desenvolvimento e manutenção
-
-```bash
-docker compose ps
+```sh
 docker compose logs -f mvc
-./testar.sh   # verifica login, proteção e token da API
 docker compose down
 ```
 
-Atenção: `docker compose down -v` **apaga o volume PostgreSQL e todos os registros**. Use apenas quando quiser reinicializar do zero.
-
-O usuário admin é criado somente se não existir. Alterar `ADMIN_PASSWORD` depois que ele já foi criado **não muda a senha existente**; para trocar a senha de um usuário persistido será necessário realizar uma atualização segura ou reinicializar o volume (perdendo os dados).
+`docker compose down -v` **apaga também o volume de dados** do PostgreSQL.
 
 ## Organização
 
 ```text
-ExemploFlask2/
-├── docker-compose.yml
+ExemploFlaskMVC/
+├── docker-compose.yml         # PostgreSQL + MVC
 ├── .env.example
-├── README.md
+├── testar.sh
 └── mvc/
     ├── Dockerfile
     ├── requirements.txt
-    ├── main.py                 # Criação do app Flask
-    ├── auth.py                 # Autenticação de sessão
-    ├── web.py                  # Controllers MVC (HTML/Jinja)
-    ├── admin_views.py          # Flask-Admin protegido
-    ├── rotas.py                # Rotas REST da aula anterior
-    ├── forms.py                # Login e logout (CSRF)
-    ├── core/banco.py           # Conexão PostgreSQL
-    ├── model/modelos.py        # Classes de domínio preservadas
-    ├── model/orm.py            # Modelos do Peewee
-    ├── model/dao.py            # DAO com Peewee
-    ├── data/criar_banco.py
-    ├── data/popular_banco.py   # Faker preservado
-    ├── data/inicializar.py
-    ├── templates/
-    └── static/
+    ├── main.py                # Criação do app Flask
+    ├── rotas.py               # Rotas REST originais (com ajustes de import)
+    ├── model/
+    │   ├── modelos.py         # 3 modelos Peewee (mesmas tabelas e campos)
+    │   ├── dominio.py         # Classes Aluno, Disciplina, Matrícula e Pessoa
+    │   └── dao.py             # Mesmo DAO Peewee + consultas SQL prontas
+    ├── data/
+    │   ├── criar_banco2.py    # Criação das tabelas acadêmicas
+    │   ├── popular_banco2.py  # População com os dados originais
+    │   ├── popular_banco.py   # Função gerar_dados/Faker original
+    │   └── inicializar.py     # Inicialização e usuário administrativo
+    ├── auth.py                # Flask-Login + formulário de login
+    ├── web.py                 # Controllers MVC, retornam HTML
+    ├── admin_views.py         # CRUD Flask-Admin + verificação de login
+    └── templates/             # Views HTML/Jinja
 ```
 
-## Observações didáticas
+## Mudanças no código antigo (mínimas)
 
-- **Model**: classes de domínio e DAOs do pacote `model/`.
-- **View**: templates HTML em `templates/`, renderizados com Jinja.
-- **Controller**: funções de rota em `web.py`; formulários CRUD no Flask-Admin.
-- **Autenticação**: sessão para usuários humanos via Flask-Login, senha armazenada com hash; rotas antigas REST com token Bearer.
-- Os dados iniciais refletem o exemplo anterior: matrículas ainda são ligadas diretamente a disciplinas. `Oferecimento` e serviço de frequência serão adicionados numa etapa posterior.
-- Não use as senhas de exemplo em um servidor exposto à internet. Este é um projeto didático, não um sistema acadêmico de produção.
+1. **`model/modelos.py`:** apenas a conexão `SqliteDatabase` foi substituída por `PostgresqlDatabase`. Os campos de `AlunoORM`, `DisciplinaORM` e `MatriculaORM` são os mesmos.
+2. **`model/dao.py`:** `model2.modelos` virou `model.modelos`; placeholders SQL `?` viraram `%s`; a média usa `ROUND(AVG(m.nota)::numeric, 2)` no PostgreSQL. Os métodos e as consultas SQL foram preservados. A conversão de erros de integridade para `sqlite3.IntegrityError` continua existindo para compatibilidade com as rotas antigas.
+3. **`rotas.py`:** referências a `model2` viraram `model`; removidas as chamadas de rollback do banco SQLite, que não é mais utilizado pelas rotas.
+4. **`data/criar_banco2.py` e `data/popular_banco2.py`:** somente imports ajustados para `model/` e mensagem de saída do banco.
+5. **`model/dominio.py`:** foi necessário declarar as classes de domínio em um módulo pequeno, porque o `model/modelos.py` incluído no ZIP tinha um `from model.modelos import ...` apontando para o **próprio arquivo**, impedindo qualquer import. Os modelos ORM não foram reestruturados; as classes continuam acessíveis via `from model.modelos import Aluno`.
+6. `core/banco.py`, `data/criar_banco.py` e a função antiga `data/popular_banco.py::popular_banco` foram mantidos como **legado SQLite**; não participam da execução PostgreSQL. O script `criar_e_popular.sh` passa a chamar as variantes `2`.
+
+## Autenticação e banco
+
+- **MVC e Flask-Admin:** usam sessão com Flask-Login. Senhas são guardadas com hash Werkzeug. Os formulários de login e Flask-Admin usam proteção CSRF.
+- **API REST antiga:** continua acessível sem login, para preservar os comandos da aula anterior. A autenticação da API de frequência será um assunto separado, em etapa posterior.
+- **PostgreSQL:** um contêiner oficial `postgres:17-alpine` com volume `pgdata`; conexão de dentro do MVC via `POSTGRES_HOST=postgres`, porta interna 5432; porta 5433 local opcional para ferramentas SQL.
+- O esquema acadêmico continua tendo apenas `alunos`, `disciplinas` e `matriculas`. A única tabela nova é `usuarios`, exclusiva da autenticação. `Oferecimento`, `Sala` e `Presenca` não foram adicionados.
+
+O projeto é **didático**: para uso fora de localhost seriam necessárias configurações adicionais de segurança, servidor WSGI apropriado e revisão do acesso à API REST antiga.

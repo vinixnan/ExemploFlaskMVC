@@ -2,9 +2,8 @@ import sqlite3
 
 from flask import Blueprint, request, url_for
 
-from core.banco import BancoSQLite
-from model2.dao import AlunoDAO, DisciplinaDAO, MatriculaDAO
-from model2.modelos import Aluno
+from model.dao import AlunoDAO, DisciplinaDAO, MatriculaDAO
+from model.modelos import Aluno
 
 api = Blueprint("api", __name__)
 
@@ -69,7 +68,6 @@ def criar_aluno():
     try:
         AlunoDAO().inserir(aluno)
     except sqlite3.IntegrityError:
-        BancoSQLite().conexao.rollback()
         return {"erro": "NUSP já cadastrado"}, 409
     return (
         aluno.to_dict(),
@@ -93,7 +91,6 @@ def excluir_aluno(nusp):
     try:
         removidos = AlunoDAO().excluir(nusp)
     except sqlite3.IntegrityError:
-        BancoSQLite().conexao.rollback()
         return {"erro": "Aluno possui matrículas vinculadas"}, 409
     if removidos == 0:
         return {"erro": "Aluno não encontrado"}, 404

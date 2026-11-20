@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Disciplinas — Universidade{% endblock %}
+{% block content %}
+<h1>Disciplinas</h1>
+<table><thead><tr><th>Código</th><th>Nome</th></tr></thead>
+<tbody>{% for disciplina in disciplinas %}<tr>
+  <td>{{ disciplina.codigo }}</td><td>{{ disciplina.nome }}</td>
+</tr>{% endfor %}</tbody></table>
+{% endblock %}

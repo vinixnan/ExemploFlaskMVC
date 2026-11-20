@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Matrículas — Universidade{% endblock %}
+{% block content %}
+<h1>Matrículas</h1>
+<table><thead><tr><th>ID</th><th>Aluno</th><th>Disciplina</th><th>Período</th><th>Nota</th><th>Frequência</th></tr></thead>
+<tbody>{% for m in matriculas %}<tr>
+  <td>{{ m.id_matricula }}</td><td>{{ m.aluno.nome }}</td>
+  <td>{{ m.disciplina.nome }}</td><td>{{ m.periodo }}</td>
+  <td>{{ m.nota }}</td><td>{{ m.frequencia }}%</td>
+</tr>{% endfor %}</tbody></table>
+{% endblock %}

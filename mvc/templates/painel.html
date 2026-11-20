@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Painel — Universidade{% endblock %}
+{% block content %}
+<h1>Painel acadêmico</h1>
+<div class="cartao">
+  <p><strong>{{ alunos }}</strong> alunos</p>
+  <p><strong>{{ disciplinas }}</strong> disciplinas</p>
+  <p><strong>{{ matriculas }}</strong> matrículas</p>
+  <p>Utilize o <a href="/admin/">Flask-Admin</a> para cadastrar, atualizar e excluir registros.</p>
+</div>
+{% endblock %}

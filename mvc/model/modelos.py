@@ -1,16 +1,21 @@
+import os
+
 from peewee import (
     Model,
-    SqliteDatabase,
+    PostgresqlDatabase,
     IntegerField,
     TextField,
     FloatField,
     ForeignKeyField,
 )
-from core.definitions import ARQUIVO_BANCO
-from model.modelos import Pessoa, Aluno, Disciplina, Matricula
+from model.dominio import Pessoa, Aluno, Disciplina, Matricula
 
-banco_peewee = SqliteDatabase(
-    str(ARQUIVO_BANCO), pragmas={"foreign_keys": 1}, timeout=30
+banco_peewee = PostgresqlDatabase(
+    os.getenv("POSTGRES_DB", "universidade"),
+    user=os.getenv("POSTGRES_USER", "universidade"),
+    password=os.environ.get("POSTGRES_PASSWORD", ""),
+    host=os.getenv("POSTGRES_HOST", "localhost"),
+    port=int(os.getenv("POSTGRES_PORT", "5432")),
 )
 
 

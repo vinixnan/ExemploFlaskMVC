@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}Alunos — Universidade{% endblock %}
+{% block content %}
+<h1>Alunos</h1>
+<table><thead><tr><th>NUSP</th><th>Nome</th><th>E-mail</th><th>Curso</th><th>Ingresso</th></tr></thead>
+<tbody>{% for aluno in alunos %}<tr>
+  <td>{{ aluno.nusp }}</td><td>{{ aluno.nome }}</td><td>{{ aluno.email }}</td>
+  <td>{{ aluno.curso }}</td><td>{{ aluno.ano_ingresso }}</td>
+</tr>{% endfor %}</tbody></table>
+{% endblock %}

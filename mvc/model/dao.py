@@ -1,7 +1,7 @@
 import sqlite3
 from peewee import IntegrityError as PeeweeIntegrityError, fn
 
-from model2.modelos import (
+from model.modelos import (
     Aluno,
     Disciplina,
     Matricula,
@@ -162,7 +162,7 @@ class DisciplinaDAO:
             FROM disciplinas AS d
             INNER JOIN matriculas AS m
               ON d.codigo_disciplina = m.codigo_disciplina
-            WHERE m.nusp = ?
+            WHERE m.nusp = %s
             ORDER BY d.nome_disciplina
         """
         return [
@@ -177,7 +177,7 @@ class DisciplinaDAO:
             FROM matriculas AS m
             INNER JOIN alunos AS a ON a.nusp = m.nusp
             INNER JOIN disciplinas AS d ON d.codigo_disciplina = m.codigo_disciplina
-            WHERE d.codigo_disciplina = ?
+            WHERE d.codigo_disciplina = %s
             ORDER BY m.nota DESC
         """
         return _dicionarios(banco_peewee.execute_sql(sql, (codigo,)))
@@ -185,7 +185,7 @@ class DisciplinaDAO:
     @banco_peewee.connection_context()
     def medias_notas(self):
         sql = """
-            SELECT d.nome_disciplina, ROUND(AVG(m.nota), 2) AS media_notas
+            SELECT d.nome_disciplina, ROUND(AVG(m.nota)::numeric, 2) AS media_notas
             FROM disciplinas AS d
             INNER JOIN matriculas AS m
               ON m.codigo_disciplina = d.codigo_disciplina
@@ -296,8 +296,8 @@ class MatriculaDAO:
             FROM matriculas AS m
             INNER JOIN alunos AS a ON m.nusp = a.nusp
             INNER JOIN disciplinas AS d ON m.codigo_disciplina = d.codigo_disciplina
-            WHERE d.codigo_disciplina = ?
-              AND m.nota >= ? AND m.frequencia >= ?
+            WHERE d.codigo_disciplina = %s
+              AND m.nota >= %s AND m.frequencia >= %s
             ORDER BY m.nota DESC, a.nome ASC, m.id_matricula ASC
         """
         return _dicionarios(
